@@ -11,20 +11,25 @@ message("[INFO] Loading sources")
 file(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR}
         "src/Decoder.cpp"
         "src/Decoder.h"
+        "src/Server.cpp"
+        "src/Server.h"
         "lib/Exception.cpp"
         "lib/Exception.h")
 
 message("[INFO] Sources: ${SOURCES}")
-message("[INFO] Sources loaded!")
+
+message("[INFO] Adding third-party libraries")
+find_package(cpprestsdk REQUIRED)
 
 add_executable(quasar  src/main.cpp ${SOURCES})
+target_link_libraries(quasar PRIVATE cpprestsdk::cpprest)
 
-message(STATUS "[INFO] Adding test files")
+message("[INFO] Adding test files")
 enable_testing()
 find_package(GTest REQUIRED)
 
 add_executable(quasar_test test/main_test.cpp ${SOURCES})
-target_link_libraries(quasar_test GTest::GTest GTest::Main)
+target_link_libraries(quasar_test GTest::GTest GTest::Main cpprestsdk::cpprest)
 
 add_test(NAME quasar_test
         COMMAND quasar_test)
