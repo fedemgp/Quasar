@@ -28,7 +28,9 @@ message("[INFO] Adding test files")
 enable_testing()
 find_package(GTest REQUIRED)
 
-add_executable(quasar_test test/main_test.cpp ${SOURCES})
+file(GLOB TEST_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}
+        "test/*.cpp")
+add_executable(quasar_test ${TEST_SOURCES} ${SOURCES})
 target_link_libraries(quasar_test GTest::GTest GTest::Main cpprestsdk::cpprest)
 
 add_test(NAME quasar_test
