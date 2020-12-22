@@ -13,78 +13,79 @@ int main(int argc, char *argv[]) {
 }
 
 TEST(getLocation, returnsThePositionOfTheTransmitter) {
-    std::vector<Position> satellites;
-    satellites.emplace_back(-500, -200);
-    satellites.emplace_back(100, -100);
-    satellites.emplace_back(500, 100);
-    Decoder decoder(satellites);
-    std::vector<float> distances = {100, 115.5, 142.7};
+    Decoder decoder;
+    decoder.addSatelite(KENOBI_NAME, {-500, -200});
+    decoder.addSatelite(SKYWALKER_NAME, {100, -100});
+    decoder.addSatelite(SATO_NAME, {500, 100});
+    std::map<std::string, float> distances = {{KENOBI_NAME, 100}, {SKYWALKER_NAME, 115.5}, {SATO_NAME, 142.7}};
     const Position transmitterPos = decoder.getLocation(distances);
     EXPECT_NEAR(transmitterPos.x, -487.28, 0.01);
     EXPECT_NEAR(transmitterPos.y, 1557.01, 0.01);
 }
 
 TEST(getLocation, anotherTrueAssert) {
-    std::vector<Position> satellites;
-    satellites.emplace_back(5, 15);
-    satellites.emplace_back(5, 5);
-    satellites.emplace_back(20, 10);
-    Decoder decoder(satellites);
-    std::vector<float> distances = {5.65, 7.21, 11.04};
+    Decoder decoder;
+    decoder.addSatelite(KENOBI_NAME, {5, 15});
+    decoder.addSatelite(SKYWALKER_NAME, {5, 5});
+    decoder.addSatelite(SATO_NAME, {20, 10});
+    std::map<std::string, float> distances = {{KENOBI_NAME, 5.65}, {SKYWALKER_NAME, 7.21}, {SATO_NAME, 11.04}};
     const Position transmitterPos = decoder.getLocation(distances);
     EXPECT_NEAR(transmitterPos.x, 9, 0.1);
     EXPECT_NEAR(transmitterPos.y, 11, 0.1);
 }
 
 TEST(getLocation, estimatesToEquidistantPointIfCirclesDoesntIntersect) {
-    std::vector<Position> satellites;
-    satellites.emplace_back(5, 15);
-    satellites.emplace_back(5, 5);
-    satellites.emplace_back(20, 10);
-    Decoder decoder(satellites);
+    Decoder decoder;
+    decoder.addSatelite(KENOBI_NAME, {5, 15});
+    decoder.addSatelite(SKYWALKER_NAME, {5, 5});
+    decoder.addSatelite(SATO_NAME, {20, 10});
     // Los circulos no se intersectan, el punto medio entre estos es (9; 9.5)
-    std::vector<float> distances = {5, 4, 10};
+    std::map<std::string, float> distances = {{KENOBI_NAME, 5}, {SKYWALKER_NAME, 4}, {SATO_NAME, 10}};
     Position transmitterPos = decoder.getLocation(distances);
     EXPECT_NEAR(transmitterPos.x, 9, 0.1);
     EXPECT_NEAR(transmitterPos.y, 9.5, 0.1);
     // El resultado cuando las distancias son las correctas
-    distances = {6.8, 6, 11};
+    distances = {{KENOBI_NAME, 6.8}, {SKYWALKER_NAME, 6}, {SATO_NAME, 11}};
     transmitterPos = decoder.getLocation(distances);
     EXPECT_NEAR(transmitterPos.x, 9, 0.1);
     EXPECT_NEAR(transmitterPos.y, 9.5, 0.1);
 }
 
 TEST(getLocation, estimatesToEquidistantPointIfCirclesDoesntIntersectInASinglePoint) {
-    std::vector<Position> satellites;
-    satellites.emplace_back(5, 15);
-    satellites.emplace_back(5, 5);
-    satellites.emplace_back(20, 10);
-    Decoder decoder(satellites);
+    Decoder decoder;
+    decoder.addSatelite(KENOBI_NAME, {5, 15});
+    decoder.addSatelite(SKYWALKER_NAME, {5, 5});
+    decoder.addSatelite(SATO_NAME, {20, 10});
     // Los circulos se intersectan, pero no hay convergencia en un punto, sinó en un area cuyo centro es (9; 9.5)
-    std::vector<float> distances = {7.8, 7, 11.5};
+    std::map<std::string, float> distances = {{KENOBI_NAME, 7.8}, {SKYWALKER_NAME, 7}, {SATO_NAME, 11.5}};
     Position transmitterPos = decoder.getLocation(distances);
     EXPECT_NEAR(transmitterPos.x, 9, 0.1);
     EXPECT_NEAR(transmitterPos.y, 9.5, 0.1);
     // El resultado cuando las distancias son las correctas
-    distances = {6.8, 6, 11};
+    distances = {{KENOBI_NAME, 6.8}, {SKYWALKER_NAME, 6}, {SATO_NAME, 11}};
     transmitterPos = decoder.getLocation(distances);
     EXPECT_NEAR(transmitterPos.x, 9, 0.1);
     EXPECT_NEAR(transmitterPos.y, 9.5, 0.1);
 }
 
 TEST(getString, decodesMessage) {
-    std::vector<Position> satellites = {{5, 15}, {5, 5}, {20, 10}};
-    Decoder decoder(satellites);
-    std::vector<std::vector<std::string>> messages = {{"", "hola", ""},{"hola",""},{"", "", "", "mundo"}};
+    Decoder decoder;
+    std::vector<web::json::array> messages;
+    messages.emplace_back(web::json::value::parse("[\"\", \"hola\", \"\"]").as_array());
+    messages.emplace_back(web::json::value::parse("[\"hola\", \"\"]").as_array());
+    messages.emplace_back(web::json::value::parse("[\"\", \"\", \"\", \"mundo\"]").as_array());
     std::string result = decoder.getString(messages);
     EXPECT_EQ(result, "hola mundo");
 }
 
 TEST(getString, throwsExceptionIfAWordCouldntBeDecoded) {
     try {
-        std::vector<Position> satellites = {{5, 15}, {5, 5}, {20, 10}};
-        Decoder decoder(satellites);
-        std::vector<std::vector<std::string>> messages = {{"un", "mensaje", ""},{"un","mensaje", ""},{"un", "mensaje", ""}};
+        Decoder decoder;
+        std::vector<web::json::array> messages;
+        messages.emplace_back(web::json::value::parse("[\"un\", \"mensaje\", \"\"]").as_array());
+        messages.emplace_back(web::json::value::parse("[\"un\", \"mensaje\", \"\"]").as_array());
+        messages.emplace_back(web::json::value::parse("[\"un\", \"mensaje\", \"\"]").as_array());
+
         std::string result = decoder.getString(messages);
     } catch (std::exception &e) {
         EXPECT_EQ(std::string(e.what()),
