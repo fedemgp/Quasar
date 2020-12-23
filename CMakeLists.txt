@@ -13,6 +13,9 @@ file(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR}
         "src/Decoder.h"
         "src/Server.cpp"
         "src/Server.h"
+        "src/HttpController.h"
+        "src/TopSecretController.cpp"
+        "src/TopSecretController.h"
         "lib/Exception.cpp"
         "lib/Exception.h")
 

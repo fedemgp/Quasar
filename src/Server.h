@@ -8,14 +8,16 @@
 
 #include <cpprest/http_listener.h>
 #include <cpprest/details/http_helpers.h>
+#include <functional>
 
 #include "Decoder.h"
+#include "HttpController.h"
 
 class Server {
 private:
     web::http::experimental::listener::http_listener listener;
+    std::map<std::string, HttpController *> controllers;
     Decoder decoder;
-
 public:
     Server();
     ~Server();
@@ -30,6 +32,12 @@ public:
      * @return endpoint como string
      */
     std::string getEndpoint();
+    /**
+     * Retorna el path solicitado como un vector de strings
+     * @param http_request
+     * @return
+     */
+    std::vector<utility::string_t> requestPath(const web::http::http_request &httpRequest);
 };
 
 
