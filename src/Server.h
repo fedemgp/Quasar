@@ -22,11 +22,17 @@ public:
     Server();
     ~Server();
     /**
-     * Callback que se ejecuta cuando se realiza un POST http. Se parceará el mensaje para
-     * ejecutar una lambda acorde al endpoint solicitado
+     * Callback que se ejecuta cuando se realiza un POST http. Se parceará la uri para ejecutar
+     * el controlador determinado acorde al endpoint.
      * @param message
      */
     void handlePost(web::http::http_request message);
+    /**
+     * Callback que se ejecuta cuando se realiza un GET http. Se parceará la uri para ejecutar
+     * el controlador determinado acorde al endpoint.
+     * @param message
+     */
+    void handleGet(web::http::http_request message);
     /**
      * Retorna el endpoint al que se registró el servidor REST.
      * @return endpoint como string
@@ -37,7 +43,7 @@ public:
      * @param http_request
      * @return
      */
-    std::vector<utility::string_t> requestPath(const web::http::http_request &httpRequest);
+    static std::vector<utility::string_t> requestPath(const web::http::http_request &httpRequest);
 };
 
 

@@ -8,21 +8,23 @@
 
 #include "Server.h"
 #include "TopSecretController.h"
+#include "TopSecretSplitController.h"
 
 using namespace web;
 using namespace http;
 using namespace utility;
 using namespace web::http::details;
 
-Server::Server(): listener("http://127.0.0.1:8080") {
+Server::Server(): listener("http://0.0.0.0:8080") {
     decoder.addSatelite(KENOBI_NAME, {-500, -200});
     decoder.addSatelite(SKYWALKER_NAME, {100, -100});
     decoder.addSatelite(SATO_NAME, {500, 100});
 
     controllers.emplace("topsecret", new TopSecretController(decoder));
-//    controllers.emplace("topsecret_split", [&](http_request request){this->onTopSecretSplitPost(request);});
+    controllers.emplace("topsecret_split", new TopSecretSplitController(decoder));
 
     listener.support(methods::POST, std::bind(&Server::handlePost, this, std::placeholders::_1));
+    listener.support(methods::GET, std::bind(&Server::handleGet, this, std::placeholders::_1));
     listener.open().wait();
 }
 
@@ -52,6 +54,28 @@ void Server::handlePost(http_request message) {
         message.reply(status_codes::BadRequest, e.what());
     } catch (...) {
         message.reply(status_codes::BadRequest, "Unknown error in handlePost");
+    }
+}
+
+void Server::handleGet(web::http::http_request message) {
+    try {
+        std::vector<utility::string_t> paths = requestPath(message);
+        if (paths.size() == 0) {
+            message.reply(status_codes::NotFound);
+            return;
+        }
+
+        if (controllers.find(*paths.begin()) == controllers.end()) {
+            message.reply(status_codes::NotFound);
+            return;
+        }
+
+        HttpController *controller = controllers.at(*paths.begin());
+        controller->handleGet(message);
+    } catch (std::exception &e) {
+        message.reply(status_codes::BadRequest, e.what());
+    } catch (...) {
+        message.reply(status_codes::BadRequest, "Unknown error in handleGet");
     }
 }
 

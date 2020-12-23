@@ -14,7 +14,7 @@ private:
     Decoder &decoder;
 public:
     TopSecretController(Decoder &dec);
-    ~TopSecretController();
+    ~TopSecretController() override;
     void handleGet(web::http::http_request &message) override;
     void handlePut(web::http::http_request &message) override;
     void handlePost(web::http::http_request &message) override;

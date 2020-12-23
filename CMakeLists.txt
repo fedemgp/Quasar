@@ -16,6 +16,8 @@ file(GLOB SOURCES RELATIVE ${CMAKE_SOURCE_DIR}
         "src/HttpController.h"
         "src/TopSecretController.cpp"
         "src/TopSecretController.h"
+        "src/TopSecretSplitController.cpp"
+        "src/TopSecretSplitController.h"
         "lib/Exception.cpp"
         "lib/Exception.h")
 
