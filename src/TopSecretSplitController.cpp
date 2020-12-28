@@ -49,6 +49,8 @@ void TopSecretSplitController::handleGet(http_request &message) {
     posResult["y"] = json::value::number(pos.y);
     response["message"] = json::value::string(decodedMsg);
     response["position"] = posResult;
+    // borro el mapa para reiniciar el proceso
+    this->dataCollected.clear();
     message.reply(status_codes::OK, response);
 
 }
