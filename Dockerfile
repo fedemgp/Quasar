@@ -2,8 +2,7 @@
 
 # We chose Alpine to build the image because it has good support for creating
 # statically-linked, small programs.
-ARG DISTRO_VERSION=edge
-FROM alpine:${DISTRO_VERSION} AS base
+FROM ubuntu:20.04 as base 
 
 # Create separate targets for each phase, this allows us to cache intermediate
 # stages when using Google Cloud Build, and makes the final deployment stage
@@ -14,47 +13,43 @@ FROM base AS devtools
 #   - ninja-build is a backend for CMake that often compiles faster than
 #     CMake with GNU Make.
 #   - Install the boost libraries.
-RUN apk update && \
-    apk add \
-        boost-dev \
-        boost-static \
-        build-base \
+RUN apt-get -y update \
+    &&  DEBIAN_FRONTEND=noninteractive apt-get --no-install-recommends -y install \
+        apt-utils \
+        bc                          \
+        build-essential             \
+        curl                        \
+        debhelper                   \
+        locales                     \
         cmake \
         git \
         gcc \
         g++ \
         libc-dev \
-        nghttp2-static \
-        ninja \
-        openssl-dev \
-        openssl-libs-static \
         tar \
-        zlib-static \
         libcpprest-dev \
-        libgtest-dev
+        libcpprest2.10 \
+        libgtest-dev \
+        googletest-tools \
+        googletest \
+    &&  echo "en_US.UTF-8 UTF-8" > /etc/locale.gen  \
+    &&  locale-gen en_US.UTF-8                      \
+    &&  /usr/sbin/update-locale LANG=en_US.UTF-8    \
+    &&  DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
 
 # Copy the source code to /v/source and compile it.
-FROM devtools AS build
+FROM devtools AS builder
 COPY . /v/source
 WORKDIR /v/source
 
 # Run the CMake configuration step, setting the options to create
 # a statically linked C++ program
-RUN cmake -S/v/source -B/v/binary -GNinja \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_EXE_LINKER_FLAGS=-static
+RUN cmake -S/v/source -B/v/binary \
+    -DCMAKE_BUILD_TYPE=Release
 
 # Compile the binary and strip it to reduce its size.
 RUN cmake --build /v/binary
-RUN strip /v/binary/cloud_run_hello
+RUN strip /v/binary/quasar
+RUN ls /v/binary
 
-# Create the final deployment image, using `scratch` (the empty Docker image)
-# as the starting point. Effectively we create an image that only contains
-# our program.
-FROM scratch AS cloud-run-hello
-WORKDIR /r
-
-# Copy the program from the previously created stage and make it the entry point.
-COPY --from=build /v/binary/cloud_run_hello /r
-
-ENTRYPOINT [ "/r/cloud_run_hello" ]
+ENTRYPOINT [ "/v/binary/quasar" ]

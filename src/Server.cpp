@@ -61,7 +61,7 @@ void Server::handleGet(web::http::http_request message) {
     try {
         std::vector<utility::string_t> paths = requestPath(message);
         if (paths.size() == 0) {
-            message.reply(status_codes::NotFound);
+            message.reply(status_codes::OK, "Hello World");
             return;
         }
 

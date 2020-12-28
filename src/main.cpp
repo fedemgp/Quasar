@@ -13,6 +13,7 @@ int main(int argc, char const *argv[]) {
         while (quit != 'q') {
             std::cin >> quit;
         }
+        std::cout << "Server end. Bye bye" << std::endl;
     } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
         return 1;
