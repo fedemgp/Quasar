@@ -4,7 +4,7 @@ El presente trabajo es la solución al ejercicio de Mercado Libre de realizar un
 que responda a una serie de mensajes POST y GET. Se encuentra implementado en C++, en su estandar 11.
 
 Una instancia compilada se encuentra hosteada en un servidor de google cloud, y se puede interactuar
-con él mediante la URL https://quasar-lk2keog37q-rj.a.run.app/
+con él mediante la URL https://server-lk2keog37q-rj.a.run.app
 
 ## Compilación
 
